@@ -9,6 +9,7 @@ const downloadButton = document.querySelector("#download");
 let htmlFiles = [];
 let selectedPath = "";
 let selectedRawUrl = "";
+let activeRepository = null;
 
 function setStatus(message) {
   statusEl.textContent = message;
@@ -32,9 +33,10 @@ function parseGitHubUrl(urlString) {
 }
 
 function rawUrl(owner, repo, branch, path) {
-  const encodedPath = path.split("/").map(encodeURIComponent).join("/");
+  const encodedPath = path.split("/").filter(Boolean).map(encodeURIComponent).join("/");
   return "https://raw.githubusercontent.com/" + encodeURIComponent(owner) + "/" +
-    encodeURIComponent(repo) + "/" + branch.split("/").map(encodeURIComponent).join("/") + "/" + encodedPath;
+    encodeURIComponent(repo) + "/" + branch.split("/").map(encodeURIComponent).join("/") +
+    (encodedPath ? "/" + encodedPath : "");
 }
 
 async function fetchJson(url) {
@@ -53,6 +55,7 @@ async function loadRepository() {
   htmlFiles = [];
   selectedPath = "";
   selectedRawUrl = "";
+  activeRepository = null;
   downloadButton.disabled = true;
   previewFrame.removeAttribute("srcdoc");
   selectedFileLabel.textContent = "Preview";
@@ -65,17 +68,17 @@ async function loadRepository() {
       encodeURIComponent(parsed.owner) + "/" + encodeURIComponent(parsed.repo);
     const repoInfo = await fetchJson(base);
     const branch = parsed.branch || repoInfo.default_branch;
+    activeRepository = { owner: parsed.owner, repo: parsed.repo, branch };
     repoLabel.textContent = parsed.owner + "/" + parsed.repo + " · " + branch;
 
-    const tree = await fetchJson(base + "/git/trees/" +
-      branch.split("/").map(encodeURIComponent).join("%2F") + "?recursive=1");
-    if (tree.truncated) {
-      setStatus("Tree is large; GitHub returned a partial file list.");
-    } else {
-      setStatus("Found " + tree.tree.filter(item => item.type === "blob" && /\.html?$/i.test(item.path)).length + " HTML files");
-    }
-    htmlFiles = tree.tree
-      .filter(item => item.type === "blob" && /\.html?$/i.test(item.path))
+    const treeRef = branch.split("/").map(encodeURIComponent).join("%2F");
+    const tree = await fetchJson(base + "/git/trees/" + treeRef + "?recursive=1");
+    const allHtml = tree.tree.filter(item => item.type === "blob" && /\.html?$/i.test(item.path));
+    setStatus(tree.truncated
+      ? "Tree is large; GitHub returned a partial file list."
+      : "Found " + allHtml.length + " HTML files");
+
+    htmlFiles = allHtml
       .map(item => ({ path: item.path, sha: item.sha }))
       .sort((a, b) => a.path.localeCompare(b.path));
 
@@ -127,11 +130,10 @@ function renderList() {
 
 async function selectFile(file) {
   try {
-    const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-    const parsed = parseGitHubUrl(tab.url);
-    const branch = parsed.branch || "HEAD";
+    if (!activeRepository) throw new Error("Load a repository first.");
+    const { owner, repo, branch } = activeRepository;
     selectedPath = file.path;
-    selectedRawUrl = rawUrl(parsed.owner, parsed.repo, branch, file.path);
+    selectedRawUrl = rawUrl(owner, repo, branch, file.path);
     selectedFileLabel.textContent = file.path;
     downloadButton.disabled = false;
     setStatus("Loading preview…");
@@ -142,7 +144,7 @@ async function selectFile(file) {
     const html = await response.text();
     const parentPath = file.path.split("/").slice(0, -1).join("/");
     const basePath = parentPath ? parentPath + "/" : "";
-    const baseUrl = rawUrl(parsed.owner, parsed.repo, branch, basePath);
+    const baseUrl = rawUrl(owner, repo, branch, basePath) + (basePath ? "/" : "/");
     const baseTag = '<base href="' + baseUrl.replace(/&/g, "&amp;").replace(/"/g, "&quot;") + '">';
     const withBase = /<head\b[^>]*>/i.test(html)
       ? html.replace(/<head\b[^>]*>/i, match => match + baseTag)
