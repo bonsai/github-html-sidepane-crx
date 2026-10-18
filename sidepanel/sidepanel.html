@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GitHub HTML Sidepane</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <header>
+    <h1>HTML Sidepane</h1>
+    <p id="repo-label">Open a GitHub repository to begin.</p>
+  </header>
+  <main>
+    <div class="toolbar">
+      <button id="refresh" type="button">Refresh list</button>
+      <span id="status" role="status" aria-live="polite">Ready</span>
+    </div>
+    <label class="search-label" for="filter">Filter HTML files</label>
+    <input id="filter" type="search" placeholder="e.g. index.html" autocomplete="off">
+    <ul id="file-list" aria-label="HTML files"></ul>
+    <section class="preview-section">
+      <div class="preview-heading">
+        <h2 id="selected-file">Preview</h2>
+        <button id="download" type="button" disabled>Download HTML</button>
+      </div>
+      <iframe id="preview" title="HTML preview" sandbox="allow-scripts allow-forms allow-modals" referrerpolicy="no-referrer"></iframe>
+    </section>
+  </main>
+  <script src="sidepanel.js"></script>
+</body>
+</html>
