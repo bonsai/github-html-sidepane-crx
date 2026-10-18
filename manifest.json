@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "GitHub HTML Sidepane",
+  "version": "0.1.0",
+  "description": "Preview and download HTML files from the currently open GitHub repository.",
+  "minimum_chrome_version": "116",
+  "permissions": ["sidePanel", "downloads", "activeTab"],
+  "host_permissions": [
+    "https://github.com/*",
+    "https://api.github.com/*",
+    "https://raw.githubusercontent.com/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*"],
+      "js": ["src/content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "side_panel": {
+    "default_path": "sidepanel/sidepanel.html"
+  },
+  "action": {
+    "default_title": "Open GitHub HTML Sidepane"
+  }
+}
