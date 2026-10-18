@@ -1,0 +1,24 @@
+:root {
+  color-scheme: light dark;
+  font: 14px/1.45 system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 16px; }
+header { border-bottom: 1px solid color-mix(in srgb, CanvasText 18%, transparent); padding-bottom: 12px; }
+h1 { font-size: 20px; margin: 0 0 4px; }
+header p, #status { color: GrayText; margin: 0; overflow-wrap: anywhere; }
+main { display: grid; gap: 10px; padding-top: 12px; }
+.toolbar, .preview-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+button, input { font: inherit; border: 1px solid color-mix(in srgb, CanvasText 25%, transparent); border-radius: 7px; padding: 7px 9px; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .5; }
+input { width: 100%; }
+.search-label { font-weight: 600; margin-bottom: -7px; }
+#file-list { list-style: none; padding: 0; margin: 0; max-height: 220px; overflow: auto; }
+#file-list li { margin: 0 0 4px; }
+.file-button { width: 100%; text-align: left; overflow-wrap: anywhere; }
+.file-button[aria-pressed="true"] { outline: 2px solid Highlight; }
+.preview-section { border-top: 1px solid color-mix(in srgb, CanvasText 18%, transparent); padding-top: 10px; min-width: 0; }
+h2 { font-size: 14px; margin: 0; overflow-wrap: anywhere; }
+#preview { display: block; width: 100%; height: 380px; border: 1px solid color-mix(in srgb, CanvasText 20%, transparent); border-radius: 7px; background: white; }
+.empty { color: GrayText; padding: 8px 2px; }
